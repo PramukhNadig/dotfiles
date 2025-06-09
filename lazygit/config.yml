@@ -9,9 +9,9 @@ gui:
     activeBorderColor:
       - magenta
     selectedLineBgColor:
-      - black
+      - white
     selectedRangeBgColor:
-      - black
+      - pink
     unstagedChangesColor:
       - yellow
   border: rounded
