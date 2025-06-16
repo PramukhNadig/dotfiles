@@ -1,0 +1,100 @@
+#!/bin/bash
+
+# Exit immediately if a command exits with a non-zero status.
+set -e
+
+# Function to detect the operating system
+detect_os() {
+  if [[ "$(uname)" == "Darwin" ]]; then
+    echo "macOS"
+  elif [[ -f /etc/os-release ]]; then
+    . /etc/os-release
+    if [[ "$ID" == "ubuntu" || "$ID" == "debian" ]]; then
+      echo "Debian"
+    else
+      echo "Unsupported Linux distribution"
+      exit 1
+    fi
+  else
+    echo "Unsupported OS"
+    exit 1
+  fi
+}
+
+# Function to install dependencies
+install_dependencies() {
+  local os
+  os=$(detect_os)
+  echo "Detected OS: $os"
+  echo "Installing dependencies..."
+
+  if [[ "$os" == "macOS" ]]; then
+    if ! command -v brew &>/dev/null; then
+      echo "Homebrew not found. Please install it first."
+      exit 1
+    fi
+    brew install git curl ripgrep fd fzf lazygit rust
+  elif [[ "$os" == "Debian" ]]; then
+    sudo apt-get update
+    sudo apt-get install -y git curl build-essential ripgrep fd-find fzf lazygit
+    # Install Rust
+    if ! command -v cargo &>/dev/null; then
+      curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
+      # shellcheck source=/dev/null
+      source "$HOME/.cargo/env"
+    fi
+  fi
+  echo "Dependencies installed successfully."
+}
+
+# Function to install and set up Bob
+setup_bob() {
+  echo "Installing Bob version manager..."
+  if ! command -v cargo &>/dev/null; then
+    echo "Cargo is not installed. Please install Rust."
+    exit 1
+  fi
+  cargo install bob-nvim
+  echo "Bob installed successfully."
+
+  echo "Installing Neovim (nightly) with Bob..."
+  bob use nightly
+  echo "Neovim (nightly) is now the active version."
+}
+
+# Function to back up existing Neovim config
+backup_neovim_config() {
+  if [ -d "$HOME/.config/nvim" ]; then
+    echo "Backing up existing Neovim configuration to ~/.config/nvim.bak..."
+    mv "$HOME/.config/nvim" "$HOME/.config/nvim.bak"
+  fi
+  if [ -d "$HOME/.local/share/nvim" ]; then
+    echo "Backing up existing Neovim data to ~/.local/share/nvim.bak..."
+    mv "$HOME/.local/share/nvim" "$HOME/.local/share/nvim.bak"
+  fi
+}
+
+# Function to install LazyVim
+install_lazyvim() {
+  echo "Installing LazyVim..."
+  git clone https://github.com/LazyVim/starter ~/.config/nvim
+  echo "LazyVim installed successfully."
+}
+
+# Main function
+main() {
+  install_dependencies
+  setup_bob
+  backup_neovim_config
+  install_lazyvim
+
+  echo -e "\n\n"
+  echo "✅ Installation complete!"
+  echo "======================="
+  echo "Next Steps:"
+  echo "1. **Install a Nerd Font**: For the best visual experience with icons, download and install a Nerd Font from https://www.nerdfonts.com/font-downloads and set it as your terminal's font."
+  echo "2. **Start Neovim**: Open your terminal and run 'nvim'. LazyVim will automatically install the necessary plugins on the first run."
+  echo "3. **Enjoy!**: Your new Neovim setup is ready."
+}
+
+main
