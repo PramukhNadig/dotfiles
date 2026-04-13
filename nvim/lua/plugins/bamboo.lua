@@ -1,6 +1,6 @@
+-- bamboo kept as an available alt theme; switch with :colorscheme bamboo
 return {
   "ribru17/bamboo.nvim",
-  lazy = false,
-  priority = 1000,
+  lazy = true,
   opts = {},
 }
