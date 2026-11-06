@@ -1,0 +1,5 @@
+#!/usr/bin/env bash
+# new <name> [cpp] -> copy template to <name>.py (or .cpp) and open in nvim
+ext=${2:-py}
+[ -e "$1.$ext" ] || cp ~/cp/template.$ext "$1.$ext"
+nvim "$1.$ext"
