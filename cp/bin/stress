@@ -1,9 +1,10 @@
 #!/usr/bin/env bash
 # stress sol brute gen.py  -> .py or .cpp for sol/brute; gen takes the seed as argv[1]. N= sets runs.
+if [ "$(uname)" = Darwin ]; then CXX=${CXX:-clang++}; CXXINC="-I$HOME/cp/include"; else CXX=${CXX:-g++}; CXXINC=; fi
 d=$(mktemp -d); trap 'rm -rf $d' EXIT
 build() { case "$1" in
   *.py)  echo "${PY:-pypy3} $1" ;;
-  *.cpp) clang++ -I$HOME/cp/include -std=c++20 -O2 -o "$d/$2" "$1" || exit 1; echo "$d/$2" ;;
+  *.cpp) $CXX $CXXINC -std=c++20 -O2 -o "$d/$2" "$1" || exit 1; echo "$d/$2" ;;
 esac; }
 S=$(build "$1" sol); B=$(build "$2" brute)
 for i in $(seq 1 ${N:-1000}); do

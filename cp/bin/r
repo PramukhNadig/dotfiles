@@ -1,10 +1,11 @@
 #!/usr/bin/env bash
 # r file.py|file.cpp [input]  -> run (py: pypy3; cpp: clang w/ sanitizers). Set PY=python3 to use CPython.
+if [ "$(uname)" = Darwin ]; then CXX=${CXX:-clang++}; CXXINC="-I$HOME/cp/include"; else CXX=${CXX:-g++}; CXXINC=; fi
 f="$1"; shift
 b="${f%.*}"
 case "$f" in
   *.py)  exec ${PY:-pypy3} "$f" ${1:+LOCAL} < "${1:-/dev/stdin}" ;;
-  *.cpp) clang++ -I$HOME/cp/include -std=c++20 -O2 -Wall -Wextra -Wshadow -DLOCAL -fsanitize=address,undefined -o "$b.out" "$f" || exit 1
+  *.cpp) $CXX $CXXINC -std=c++20 -O2 -Wall -Wextra -Wshadow -DLOCAL -fsanitize=address,undefined -o "$b.out" "$f" || exit 1
          if [ -n "$1" ]; then "./$b.out" < "$1"; else "./$b.out"; fi ;;
   *) echo "unsupported"; exit 1 ;;
 esac
